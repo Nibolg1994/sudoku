@@ -38,7 +38,7 @@ class SudokuApiSource implements SudokuSourceInterface
     public function create(int $n): array
     {
         $response = file_get_contents(
-            static::$endPoint . "?size=" . $n . "&level=" . static::LEVEL_MEDIUM
+            static::$endPoint . "?size=" . $n . "&level=" . static::LEVEL_EASY
         );
         $response = json_decode($response, true);
 
@@ -58,7 +58,7 @@ class SudokuApiSource implements SudokuSourceInterface
      * @param $n
      * @return array
      */
-    protected static function fillEmptyBoard(int $n): array
+    private static function fillEmptyBoard(int $n): array
     {
         $board = [];
         for ($i = 0; $i < $n; $i++) {

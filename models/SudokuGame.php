@@ -99,6 +99,38 @@ class SudokuGame
     }
 
     /**
+     * @param int $digit
+     * @param int $idCell
+     * @return bool
+     */
+    public function placeDigit(int $digit, int $idCell): bool
+    {
+        if (!in_array($digit, static::getValues())) {
+            return false;
+        }
+
+        $countRows = static::getCountRows();
+
+        $y = intdiv($idCell - 1, $countRows);
+        $x = ($idCell - 1) % $countRows - 1;
+
+        if ($y >= $countRows || $y < 1) {
+            return false;
+        }
+
+        if ($x >= $countRows || $x < 1) {
+            return false;
+        }
+
+        if (empty($this->board[$x][$y])) {
+            $this->countFreeCells--;
+        }
+        $this->board[$x][$y] = $digit;
+
+        return true;
+    }
+
+    /**
      * @return array
      */
     protected static function getValues(): array
@@ -142,35 +174,4 @@ class SudokuGame
         return $items;
     }
 
-    /**
-     * @param int $digit
-     * @param int $idCell
-     * @return bool
-     */
-    public function placeDigit(int $digit, int $idCell): bool
-    {
-        if (!in_array($digit, static::getValues())) {
-            return false;
-        }
-
-        $countRows = static::getCountRows();
-
-        $y = intdiv($idCell - 1, $countRows);
-        $x = ($idCell - 1) % $countRows - 1;
-
-        if ($y >= $countRows || $y < 1) {
-            return false;
-        }
-
-        if ($x >= $countRows || $x < 1) {
-            return false;
-        }
-
-        if (empty($this->board[$x][$y])) {
-            $this->countFreeCells--;
-        }
-        $this->board[$x][$y] = $digit;
-
-        return true;
-    }
 }
