@@ -2,14 +2,33 @@
 
 namespace app\components\websockets;
 
+use app\components\sudoku\ClientApplicationInterface;
+use app\components\sudoku\events\EventMoveResponse;
+use app\components\sudoku\events\EventStartGameResponse;
+use app\components\sudoku\events\EventTopListResponse;
 use Ratchet\MessageComponentInterface;
 use Ratchet\ConnectionInterface;
+use Yii;
+use yii\base\Component;
 
-class SugokuApp implements MessageComponentInterface
+/**
+ * Class WsApplicationClient
+ * @package app\components\websockets
+ */
+class WsApplicationClient extends Component implements
+    MessageComponentInterface,
+    ClientApplicationInterface
 {
+    /**
+     * @var \SplObjectStorage
+     */
     protected $clients;
 
+    /**
+     * WsApplicationClient constructor.
+     */
     public function __construct() {
+        parent::__construct();
         $this->clients = new \SplObjectStorage;
     }
 
@@ -20,10 +39,7 @@ class SugokuApp implements MessageComponentInterface
      */
     function onOpen(ConnectionInterface $conn)
     {
-        // Store the new connection to send messages to later
         $this->clients->attach($conn);
-
-        echo "New connection! ({$conn->resourceId})\n";
     }
 
     /**
@@ -35,8 +51,6 @@ class SugokuApp implements MessageComponentInterface
     {
         // The connection is closed, remove it, as we can no longer send it messages
         $this->clients->detach($conn);
-
-        echo "Connection {$conn->resourceId} has disconnected\n";
     }
 
     /**
@@ -48,8 +62,7 @@ class SugokuApp implements MessageComponentInterface
      */
     function onError(ConnectionInterface $conn, \Exception $e)
     {
-        echo "An error has occurred: {$e->getMessage()}\n";
-
+        Yii::error($e->getMessage(). PHP_EOL. $e->getTraceAsString());
         $conn->close();
     }
 
@@ -72,5 +85,32 @@ class SugokuApp implements MessageComponentInterface
                 $client->send($msg);
             }
         }
+    }
+
+    /**
+     * @param EventStartGameResponse $event
+     * @return void
+     */
+    public function startGame(EventStartGameResponse $event)
+    {
+
+    }
+
+    /**
+     * @param EventMoveResponse $event
+     * @return void
+     */
+    public function move(EventMoveResponse $event)
+    {
+        // TODO: Implement move() method.
+    }
+
+    /**
+     * @param EventTopListResponse $event
+     * @return void
+     */
+    public function topList(EventTopListResponse $event)
+    {
+        // TODO: Implement topList() method.
     }
 }

@@ -11,40 +11,10 @@ use app\models\CompetitiveSudoku;
 use yii\base\Component;
 
 /**
- * Class ApplicationEventLoop
+ * Class ServerApplicationEventLoop
  */
-class ApplicationEventLoop extends Component
+class ServerApplicationEventLoop extends Component implements ServerApplicationInterface
 {
-    /**
-     *
-     */
-    const EVENT_START_GAME_REQUEST = 'startGameRequest';
-
-    /**
-     *
-     */
-    const EVENT_START_GAME_ACCEPT = 'startGameAccept';
-
-    /**
-     *
-     */
-    const EVENT_MOVE_REQUEST = 'eventMoveRequest';
-
-    /**
-     *
-     */
-    const EVENT_MOVE_RESPONSE = 'eventMoveRepose';
-
-    /**
-     *
-     */
-    const EVENT_SHOW_TOP_LIST_REQUEST = 'eventShowTopListRequest';
-
-    /**
-     *
-     */
-    const EVENT_SHOW_TOP_LIST_RESPONSE = 'eventShowTopListResponse';
-
     /**
      * @var bool
      */
@@ -81,7 +51,10 @@ class ApplicationEventLoop extends Component
         $responseEvent = new EventStartGameResponse();
         $responseEvent->board = $this->game->getBoard();
 
-        $this->trigger(self::EVENT_START_GAME_ACCEPT, $responseEvent);
+        $this->trigger(
+            ServerApplicationInterface::EVENT_START_GAME_ACCEPT,
+            $responseEvent
+        );
     }
 
 
@@ -105,7 +78,10 @@ class ApplicationEventLoop extends Component
             unset($users[$event->user->id]);
             $responseEvent->users = $users;
 
-            $this->trigger(self::EVENT_MOVE_RESPONSE, $responseEvent);
+            $this->trigger(
+                ServerApplicationInterface::EVENT_MOVE_RESPONSE,
+                $responseEvent
+            );
         }
     }
 
@@ -119,6 +95,10 @@ class ApplicationEventLoop extends Component
         $responseEvent = new EventTopListResponse();
         $responseEvent->user = $event->user;
         $responseEvent->topList = $storage->getTopList();
-        $this->trigger(self::EVENT_SHOW_TOP_LIST_RESPONSE, $responseEvent);
+
+        $this->trigger(
+            ServerApplicationInterface::EVENT_SHOW_TOP_LIST_RESPONSE,
+            $responseEvent
+        );
     }
 }

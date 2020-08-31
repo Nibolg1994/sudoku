@@ -2,7 +2,6 @@
 namespace app\components\sudoku\events;
 
 use app\models\User;
-use yii\base\Event;
 
 
 /**

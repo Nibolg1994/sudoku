@@ -2,7 +2,7 @@
 
 namespace app\commands;
 
-use app\components\websockets\SugokuApp;
+use app\components\websockets\WsApplicationClient;
 use app\models\SudokuApiSource;
 use app\models\SudokuGame;
 use app\models\SudokuInitializer;
@@ -27,7 +27,7 @@ class WebSocketsController extends Controller
         $server = IoServer::factory(
             new HttpServer(
                 new WsServer(
-                    new SugokuApp()
+                    new WsApplicationClient()
                 )
             ),
             8080

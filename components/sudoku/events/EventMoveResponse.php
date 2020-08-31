@@ -2,8 +2,6 @@
 
 namespace app\components\sudoku\events;
 
-use yii\base\Event;
-
 
 /**
  * Class EventMoveResponse
