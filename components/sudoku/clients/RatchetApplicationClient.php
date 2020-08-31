@@ -28,6 +28,7 @@ class RatchetApplicationClient extends Component implements
      */
     public function __construct() {
         parent::__construct();
+        $foo->on(Foo::EVENT_HELLO, 'function_name');
         $this->clients = [];
     }
 

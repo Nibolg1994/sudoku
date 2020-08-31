@@ -36,4 +36,13 @@ class Event extends YiiEvent
 
         return json_encode($data);
     }
+
+    /**
+     * @return bool
+     */
+    public function validate(): bool
+    {
+        return $this->user && $this->user->validate();
+    }
+
 }
