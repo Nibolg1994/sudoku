@@ -2,10 +2,7 @@
 
 namespace app\commands;
 
-use app\components\websockets\WsApplicationClient;
-use app\models\SudokuApiSource;
-use app\models\SudokuGame;
-use app\models\SudokuInitializer;
+
 use Ratchet\Http\HttpServer;
 use Ratchet\Server\IoServer;
 use Ratchet\WebSocket\WsServer;
@@ -18,16 +15,10 @@ class WebSocketsController extends Controller
      */
     public function actionSudokuGame()
     {
-        $game = new SudokuGame(
-            new SudokuApiSource()
-        );
-        print_r($game->getCountFreeCells());
-        exit;
-
         $server = IoServer::factory(
             new HttpServer(
                 new WsServer(
-                    new WsApplicationClient()
+                    new RatchetApplicationClient()
                 )
             ),
             8080

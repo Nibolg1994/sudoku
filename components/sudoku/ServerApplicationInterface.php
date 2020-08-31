@@ -3,8 +3,8 @@
 namespace app\components\sudoku;
 
 
+use app\components\sudoku\events\Event;
 use app\components\sudoku\events\EventMoveRequest;
-use app\components\sudoku\events\EventRequest;
 
 /**
  * Interface ServerApplicationInterface
@@ -28,10 +28,10 @@ interface ServerApplicationInterface
     const EVENT_SHOW_TOP_LIST_RESPONSE = 'eventShowTopListResponse';
 
     /**
-     * @param EventRequest $event
+     * @param Event $event
      * @return mixed
      */
-    public function startGame(EventRequest $event);
+    public function startGame(Event $event);
 
     /**
      * @param EventMoveRequest $event
@@ -40,8 +40,8 @@ interface ServerApplicationInterface
     public function move(EventMoveRequest $event);
 
     /**
-     * @param EventRequest $event
+     * @param Event $event
      * @return mixed
      */
-    public function topList(EventRequest $event);
+    public function topList(Event $event);
 }

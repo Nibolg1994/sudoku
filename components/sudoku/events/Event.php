@@ -2,9 +2,11 @@
 
 namespace app\components\sudoku\events;
 
+use app\models\User;
 use ReflectionClass;
 use ReflectionProperty;
 use yii\base\Event as YiiEvent;
+use yii\helpers\ArrayHelper;
 
 /**
  * Class Event
@@ -12,6 +14,11 @@ use yii\base\Event as YiiEvent;
  */
 class Event extends YiiEvent
 {
+    /**
+     * @var User
+     */
+    public $user;
+
     /**
      * @throws \ReflectionException
      */
@@ -21,10 +28,9 @@ class Event extends YiiEvent
         $props = $reflect->getProperties(ReflectionProperty::IS_PUBLIC);
         $data = [];
         foreach ($props as $prop) {
-            if ($prop->getName() == 'sender') {
+            if (ArrayHelper::isIn($prop->getName(), ['sender', 'user'])) {
                 continue;
             }
-
             $data[$prop->getName()] = $prop->getValue($this);
         }
 

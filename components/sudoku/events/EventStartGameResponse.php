@@ -2,6 +2,8 @@
 
 namespace app\components\sudoku\events;
 
+use app\models\User;
+
 
 /**
  * Class EventStartGameResponse
@@ -13,4 +15,9 @@ class EventStartGameResponse extends Event
      * @var array $board
      */
     public $board;
+
+    /**
+     * @var User
+     */
+    public $user;
 }

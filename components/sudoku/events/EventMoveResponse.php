@@ -18,9 +18,4 @@ class EventMoveResponse extends Event
      * @var int
      */
     public $value;
-
-    /**
-     * @var [Users]
-     */
-    public $users;
 }

@@ -6,12 +6,12 @@ namespace app\components\sudoku\events;
  * Class EventMoveRequest
  * @package app\components\sudoku\events
  */
-class EventMoveRequest extends EventRequest
+class EventMoveRequest extends Event
 {
     /**
      * @var int
      */
-    public $idCell;
+    public $cellId;
 
     /**
      * @var int

@@ -1,26 +1,25 @@
 <?php
 
-namespace app\components\websockets;
+namespace app\components\sudoku\clients;
 
-use app\components\sudoku\ClientApplicationInterface;
-use app\components\sudoku\events\EventMoveResponse;
-use app\components\sudoku\events\EventStartGameResponse;
-use app\components\sudoku\events\EventTopListResponse;
+use app\components\sudoku\events\Event;
+use app\components\sudoku\events\EventFactory;
 use Ratchet\MessageComponentInterface;
 use Ratchet\ConnectionInterface;
 use Yii;
 use yii\base\Component;
+use yii\helpers\ArrayHelper;
 
 /**
  * Class WsApplicationClient
  * @package app\components\websockets
  */
-class WsApplicationClient extends Component implements
+class RatchetApplicationClient extends Component implements
     MessageComponentInterface,
     ClientApplicationInterface
 {
     /**
-     * @var \SplObjectStorage
+     * @var array
      */
     protected $clients;
 
@@ -29,7 +28,7 @@ class WsApplicationClient extends Component implements
      */
     public function __construct() {
         parent::__construct();
-        $this->clients = new \SplObjectStorage;
+        $this->clients = [];
     }
 
     /**
@@ -39,7 +38,7 @@ class WsApplicationClient extends Component implements
      */
     function onOpen(ConnectionInterface $conn)
     {
-        $this->clients->attach($conn);
+        $this->clients[$conn->resourceId] = $conn;
     }
 
     /**
@@ -50,7 +49,7 @@ class WsApplicationClient extends Component implements
     function onClose(ConnectionInterface $conn)
     {
         // The connection is closed, remove it, as we can no longer send it messages
-        $this->clients->detach($conn);
+        unset($this->clients[$conn->resourseId]);
     }
 
     /**
@@ -74,43 +73,39 @@ class WsApplicationClient extends Component implements
      */
     function onMessage(ConnectionInterface $from, $msg)
     {
-        $numRecv = count($this->clients) - 1;
-
-        echo sprintf('Connection %d sending message "%s" to %d other connection%s' . "\n"
-            , $from->resourceId, $msg, $numRecv, $numRecv == 1 ? '' : 's');
-
-        foreach ($this->clients as $client) {
-            if ($from !== $client) {
-                // The sender is not the receiver, send to each client connected
-                $client->send($msg);
-            }
+        $event = EventFactory::createEvent($msg);
+        if ($event) {
+            $this->trigger($event->name, $event);
         }
     }
 
     /**
-     * @param EventStartGameResponse $event
+     * @param Event $event
      * @return void
      */
-    public function startGame(EventStartGameResponse $event)
+    public function sendEvent(Event $event)
     {
-
+        if (ArrayHelper::keyExists($event->user->id, $this->clients)) {
+            $client = $this->clients[$event->user->id];
+            $client->send($event);
+        }
     }
 
     /**
-     * @param EventMoveResponse $event
+     * @param Event $event
      * @return void
      */
-    public function move(EventMoveResponse $event)
+    public function sendBroadcastEvent(Event $event)
     {
-        // TODO: Implement move() method.
-    }
-
-    /**
-     * @param EventTopListResponse $event
-     * @return void
-     */
-    public function topList(EventTopListResponse $event)
-    {
-        // TODO: Implement topList() method.
+        if (!ArrayHelper::keyExists($event->user->id, $this->clients)) {
+            return;
+        }
+        $from = $this->clients[$event->user->id];
+        foreach ($this->clients as $client) {
+            if ($from !== $client) {
+                // The sender is not the receiver, send to each client connected
+                $client->send($event);
+            }
+        }
     }
 }
