@@ -15,9 +15,4 @@ class EventStartGameResponse extends Event
      * @var array $board
      */
     public $board;
-
-    /**
-     * @var User
-     */
-    public $user;
 }

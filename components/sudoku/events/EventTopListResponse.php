@@ -2,7 +2,6 @@
 
 namespace app\components\sudoku\events;
 
-use app\models\User;
 
 /**
  * Class EventTopListResponse
@@ -10,10 +9,6 @@ use app\models\User;
  */
 class EventTopListResponse extends Event
 {
-    /**
-     * @var User
-     */
-    public $user;
 
     /**
      * @var array
