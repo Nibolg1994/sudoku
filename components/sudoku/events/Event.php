@@ -44,5 +44,4 @@ class Event extends YiiEvent
     {
         return $this->user && $this->user->validate();
     }
-
 }

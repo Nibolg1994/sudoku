@@ -28,7 +28,6 @@ class RatchetApplicationClient extends Component implements
      */
     public function __construct() {
         parent::__construct();
-        $foo->on(Foo::EVENT_HELLO, 'function_name');
         $this->clients = [];
     }
 
@@ -49,6 +48,7 @@ class RatchetApplicationClient extends Component implements
      */
     function onClose(ConnectionInterface $conn)
     {
+        \UserRepository::remove($conn->resourseId);
         // The connection is closed, remove it, as we can no longer send it messages
         unset($this->clients[$conn->resourseId]);
     }
@@ -74,8 +74,16 @@ class RatchetApplicationClient extends Component implements
      */
     function onMessage(ConnectionInterface $from, $msg)
     {
-        $event = EventFactory::createEvent($msg);
-        if ($event) {
+        $event = EventFactory::createEvent($msg, $from->resourceId);
+        if (!$event) {
+            return;
+        }
+        if (!$event->validate()) {
+            $from->send(json_encode([
+                'error' => true,
+                'event' => $event->name
+            ]));
+        } else {
             $this->trigger($event->name, $event);
         }
     }

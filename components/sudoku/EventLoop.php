@@ -7,7 +7,10 @@ use app\components\sudoku\events\EventStartGameResponse;
 use app\components\sudoku\events\EventMoveRequest;
 use app\components\sudoku\events\EventMoveResponse;
 use app\components\sudoku\events\EventTopListResponse;
-use app\models\CompetitiveSudoku;
+use app\models\SudokuGame;
+use app\models\SudokuStorageInterface;
+use app\models\User;
+use UserRepository;
 use yii\base\Component;
 
 /**
@@ -21,20 +24,38 @@ class EventLoop extends Component implements ServerApplicationInterface
     private $isFinished;
 
     /**
-     * @var CompetitiveSudoku
+     * @var SudokuGame
      */
     private $game;
 
     /**
-     * ApplicationLoop constructor.
-     * @param CompetitiveSudoku $game
+     * @var User
      */
-    public function __construct(CompetitiveSudoku $game)
+    private $lastUser;
+
+    /**
+     * @var array
+     */
+    private $moves = [];
+
+    /**
+     * @var SudokuStorageInterface
+     */
+    private $storage;
+
+    /**
+     * ApplicationLoop constructor.
+     * @param SudokuGame $game
+     * @param SudokuStorageInterface $storage
+     */
+    public function __construct(SudokuGame $game, SudokuStorageInterface $storage)
     {
         parent::__construct();
         $this->isFinished = false;
         $this->game = $game;
+        $this->storage = $storage;
     }
+
 
     /**
      * @param Event $event
@@ -44,10 +65,10 @@ class EventLoop extends Component implements ServerApplicationInterface
     {
         if ($this->isFinished) {
             $this->isFinished = false;
-            $this->game->restart();
+            $this->restart();
         }
 
-        $this->game->connect($event->user);
+        UserRepository::add($event->user);
 
         $responseEvent = new EventStartGameResponse();
         $responseEvent->board = $this->game->getBoard();
@@ -65,22 +86,40 @@ class EventLoop extends Component implements ServerApplicationInterface
      */
     public function move(EventMoveRequest $event)
     {
-        $result = $this->game->move(
-            $event->user,
-            $event->cellId,
-            $event->value
+        if ($this->isFinished) {
+            return;
+        }
+
+        $cellId = $event->cellId;
+        $value = $event->value;
+        $user = $event->user;
+
+        if (
+            !empty($this->moves[$cellId])
+            && $user->id != $this->moves[$cellId]
+        ) {
+            return;
+        }
+
+        if (!$this->game->move($cellId, $value)) {
+            return;
+        }
+
+        $this->lastUser = $user;
+        $this->moves[$cellId] = $user->id;
+
+        $responseEvent = new EventMoveResponse();
+        $responseEvent->idCell = $cellId;
+        $responseEvent->value = $value;
+
+        $this->finish();
+
+        $this->trigger(
+            ServerApplicationInterface::EVENT_MOVE_RESPONSE,
+            $responseEvent
         );
 
-        if ($result) {
-            $responseEvent = new EventMoveResponse();
-            $responseEvent->idCell = $event->cellId;
-            $responseEvent->value = $event->value;
 
-            $this->trigger(
-                ServerApplicationInterface::EVENT_MOVE_RESPONSE,
-                $responseEvent
-            );
-        }
     }
 
     /**
@@ -89,7 +128,7 @@ class EventLoop extends Component implements ServerApplicationInterface
      */
     public function topList(Event $event)
     {
-        $storage = $this->game->getStorage();
+        $storage = $this->storage;
         $responseEvent = new EventTopListResponse();
         $responseEvent->user = $event->user;
         $responseEvent->topList = $storage->getTopList();
@@ -98,5 +137,32 @@ class EventLoop extends Component implements ServerApplicationInterface
             ServerApplicationInterface::EVENT_SHOW_TOP_LIST_RESPONSE,
             $responseEvent
         );
+    }
+
+    /**
+     * @return bool
+     */
+    private function finish()
+    {
+        if (!$this->game->isEnd()) {
+            return false;
+        }
+
+        $this->isFinished = true;
+        $this->storage->save($this->lastUser);
+
+        return true;
+    }
+
+
+    /**
+     * Restart game
+     */
+    private function restart()
+    {
+        $this->game->restart();
+        $this->lastUser = null;
+        $this->moves[] = [];
+        UserRepository::clear();
     }
 }

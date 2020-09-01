@@ -3,6 +3,7 @@
 namespace app\commands;
 
 
+use app\components\sudoku\clients\RatchetApplicationClient;
 use Ratchet\Http\HttpServer;
 use Ratchet\Server\IoServer;
 use Ratchet\WebSocket\WsServer;

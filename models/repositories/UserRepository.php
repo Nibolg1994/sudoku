@@ -73,4 +73,12 @@ class UserRepository
         }
         return false;
     }
+
+    /**
+     *
+     */
+    public static function clear()
+    {
+        static::$users = [];
+    }
 }

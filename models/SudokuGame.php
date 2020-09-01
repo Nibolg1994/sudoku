@@ -36,6 +36,11 @@ class SudokuGame
     protected $board;
 
     /**
+     * @var SudokuSourceInterface
+     */
+    protected $source;
+
+    /**
      * SudokuGame constructor.
      * @internal param $countFreeCells
      * @internal param $board
@@ -43,8 +48,17 @@ class SudokuGame
      */
     public function __construct(SudokuSourceInterface $source)
     {
+        $this->source = $source;
+        $this->restart();
+    }
+
+    /**
+     * Restart game
+     */
+    public function restart()
+    {
         $countRows = static::getCountRows();
-        $this->board = $source->create($countRows);
+        $this->board = $this->source->create($countRows);
         $this->countFreeCells = $countRows * $countRows;
         foreach ($this->board as $row) {
             foreach ($row as $item) {
@@ -103,7 +117,7 @@ class SudokuGame
      * @param int $idCell
      * @return bool
      */
-    public function placeDigit(int $digit, int $idCell): bool
+    public function move(int $digit, int $idCell): bool
     {
         if (!in_array($digit, static::getValues())) {
             return false;
