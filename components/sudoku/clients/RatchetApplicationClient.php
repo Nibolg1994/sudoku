@@ -7,16 +7,13 @@ use app\components\sudoku\events\EventFactory;
 use Ratchet\MessageComponentInterface;
 use Ratchet\ConnectionInterface;
 use Yii;
-use yii\base\Component;
 use yii\helpers\ArrayHelper;
 
 /**
  * Class WsApplicationClient
  * @package app\components\websockets
  */
-class RatchetApplicationClient extends Component implements
-    MessageComponentInterface,
-    ClientApplicationInterface
+class RatchetApplicationClient extends ApplicationClient implements MessageComponentInterface
 {
     /**
      * @var array

@@ -3,10 +3,10 @@
 namespace app\commands;
 
 
-use app\components\sudoku\clients\RatchetApplicationClient;
 use Ratchet\Http\HttpServer;
 use Ratchet\Server\IoServer;
 use Ratchet\WebSocket\WsServer;
+use Yii;
 use yii\console\Controller;
 
 class WebSocketsController extends Controller
@@ -16,10 +16,11 @@ class WebSocketsController extends Controller
      */
     public function actionSudokuGame()
     {
+
         $server = IoServer::factory(
             new HttpServer(
                 new WsServer(
-                    new RatchetApplicationClient()
+                   Yii::$app->get('client')
                 )
             ),
             8080
