@@ -24,12 +24,17 @@ abstract class ApplicationClient extends Component implements ClientApplicationI
 
         $this->on(
             ClientApplicationInterface::EVENT_START_GAME_REQUEST,
-            [$server, 'startGame']
+            [$server, 'start']
         );
 
         $this->on(
             ClientApplicationInterface::EVENT_SHOW_TOP_LIST_REQUEST,
             [$server, 'topList']
+        );
+
+        $this->on(
+            ClientApplicationInterface::EVENT_DISCONNECT,
+            [$server, 'disconnect']
         );
     }
 }

@@ -26,6 +26,11 @@ interface ClientApplicationInterface
     public const EVENT_SHOW_TOP_LIST_REQUEST = 'eventShowTopListRequest';
 
     /**
+     * Event trigger when the user disconnected
+     */
+    public const EVENT_DISCONNECT = 'eventDisconnect';
+
+    /**
      * @param Event $event
      * @return void
      */

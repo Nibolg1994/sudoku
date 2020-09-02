@@ -45,7 +45,6 @@ class RatchetApplicationClient extends ApplicationClient implements MessageCompo
      */
     function onClose(ConnectionInterface $conn)
     {
-        \UserRepository::remove($conn->resourseId);
         // The connection is closed, remove it, as we can no longer send it messages
         unset($this->clients[$conn->resourseId]);
     }
@@ -72,15 +71,7 @@ class RatchetApplicationClient extends ApplicationClient implements MessageCompo
     function onMessage(ConnectionInterface $from, $msg)
     {
         $event = EventFactory::createEvent($msg, $from->resourceId);
-        if (!$event) {
-            return;
-        }
-        if (!$event->validate()) {
-            $from->send(json_encode([
-                'error' => true,
-                'event' => $event->name
-            ]));
-        } else {
+        if ($event) {
             $this->trigger($event->name, $event);
         }
     }
@@ -91,8 +82,8 @@ class RatchetApplicationClient extends ApplicationClient implements MessageCompo
      */
     public function sendEvent(Event $event)
     {
-        if (ArrayHelper::keyExists($event->user->id, $this->clients)) {
-            $client = $this->clients[$event->user->id];
+        if (ArrayHelper::keyExists($event->clientId, $this->clients)) {
+            $client = $this->clients[$event->clientId];
             $client->send($event);
         }
     }
@@ -103,10 +94,10 @@ class RatchetApplicationClient extends ApplicationClient implements MessageCompo
      */
     public function sendBroadcastEvent(Event $event)
     {
-        if (!ArrayHelper::keyExists($event->user->id, $this->clients)) {
+        if (!ArrayHelper::keyExists($event->clientId, $this->clients)) {
             return;
         }
-        $from = $this->clients[$event->user->id];
+        $from = $this->clients[$event->clientId];
         foreach ($this->clients as $client) {
             if ($from !== $client) {
                 // The sender is not the receiver, send to each client connected

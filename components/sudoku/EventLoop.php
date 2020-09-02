@@ -2,21 +2,17 @@
 
 namespace app\components\sudoku;
 
+use app\components\sudoku\events\ErrorEvent;
 use app\components\sudoku\events\Event;
-use app\components\sudoku\events\EventStartGameResponse;
-use app\components\sudoku\events\EventMoveRequest;
-use app\components\sudoku\events\EventMoveResponse;
-use app\components\sudoku\events\EventTopListResponse;
 use app\models\SudokuGame;
 use app\models\SudokuStorageInterface;
 use app\models\User;
 use UserRepository;
-use yii\base\Component;
 
 /**
  * Class ServerApplicationEventLoop
  */
-class EventLoop extends Component implements ServerApplicationInterface
+class EventLoop extends ApplicationServer
 {
     /**
      * @var bool
@@ -29,7 +25,7 @@ class EventLoop extends Component implements ServerApplicationInterface
     private $game;
 
     /**
-     * @var User
+     * @var
      */
     private $lastUser;
 
@@ -56,22 +52,33 @@ class EventLoop extends Component implements ServerApplicationInterface
         $this->storage = $storage;
     }
 
-
     /**
      * @param Event $event
      * @return void
      */
-    public function startGame(Event $event)
+    public function start(Event $event)
     {
         if ($this->isFinished) {
             $this->isFinished = false;
             $this->restart();
         }
 
-        UserRepository::add($event->user);
+        if (!isset($event->clientId, $event->data['name'])
+            || !$this->connect($event->clientId, $event->data['name'])
+        ) {
+            $responseEvent = new ErrorEvent();
+            $responseEvent->clientId = $event->clientId;
+            $responseEvent->message = "Name already exists in this game or incorrect";
+            $this->trigger(
+                ServerApplicationInterface::EVENT_ERROR,
+                $responseEvent
+            );
+            return;
+        }
 
-        $responseEvent = new EventStartGameResponse();
-        $responseEvent->board = $this->game->getBoard();
+        $responseEvent = new Event();
+        $responseEvent->data['game'] = $this->game->getBoard();
+        $responseEvent->clientId = $event->clientId;
 
         $this->trigger(
             ServerApplicationInterface::EVENT_START_GAME_ACCEPT,
@@ -81,22 +88,30 @@ class EventLoop extends Component implements ServerApplicationInterface
 
 
     /**
-     * @param EventMoveRequest $event
+     * @param Event $event
      * @return void
      */
-    public function move(EventMoveRequest $event)
+    public function move(Event $event)
     {
         if ($this->isFinished) {
             return;
         }
 
-        $cellId = $event->cellId;
-        $value = $event->value;
-        $user = $event->user;
+        if (!isset(
+            $event->data['cellId'],
+            $event->data['value'],
+            $event->clientId)
+        ) {
+            return;
+        }
+
+        $cellId = $event->data['cellId'];
+        $value = $event->data['value'];
+        $clientId = $event->clientId;
 
         if (
             !empty($this->moves[$cellId])
-            && $user->id != $this->moves[$cellId]
+            && $clientId != $this->moves[$cellId]
         ) {
             return;
         }
@@ -105,15 +120,14 @@ class EventLoop extends Component implements ServerApplicationInterface
             return;
         }
 
-        $this->lastUser = $user;
-        $this->moves[$cellId] = $user->id;
-
-        $responseEvent = new EventMoveResponse();
-        $responseEvent->idCell = $cellId;
-        $responseEvent->value = $value;
-
+        $this->lastUser = $clientId;
+        $this->moves[$cellId] = $clientId;
         $this->finish();
 
+        $responseEvent = new Event();
+        $responseEvent->clientId = $clientId;
+        $responseEvent->data['cellId'] = $cellId;
+        $responseEvent->data['value'] = $value;
         $this->trigger(
             ServerApplicationInterface::EVENT_MOVE_RESPONSE,
             $responseEvent
@@ -129,14 +143,22 @@ class EventLoop extends Component implements ServerApplicationInterface
     public function topList(Event $event)
     {
         $storage = $this->storage;
-        $responseEvent = new EventTopListResponse();
-        $responseEvent->user = $event->user;
-        $responseEvent->topList = $storage->getTopList();
+        $responseEvent = new Event();
+        $responseEvent->clientId = $event->clientId;
+        $responseEvent->data['topList'] = $storage->getTopList();
 
         $this->trigger(
             ServerApplicationInterface::EVENT_SHOW_TOP_LIST_RESPONSE,
             $responseEvent
         );
+    }
+
+    /**
+     * @param Event $event
+     */
+    public function disconnect(Event $event)
+    {
+        UserRepository::remove($event->clientId);
     }
 
     /**
@@ -164,5 +186,33 @@ class EventLoop extends Component implements ServerApplicationInterface
         $this->lastUser = null;
         $this->moves[] = [];
         UserRepository::clear();
+    }
+
+
+    /**
+     * @param $clientId
+     * @param $name
+     * @return bool
+     */
+    private function connect($clientId, $name)
+    {
+        if (!UserRepository::exists($clientId)
+            && UserRepository::hasName($name)
+        ) {
+            return false;
+        }
+
+        $user = new User([
+            'id' => $clientId,
+            'name' => $name
+        ]);
+
+        if ($user->validate()) {
+            return false;
+        }
+
+        UserRepository::add($user);
+
+        return true;
     }
 }

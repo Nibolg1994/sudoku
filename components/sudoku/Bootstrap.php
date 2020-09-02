@@ -9,6 +9,7 @@ use app\models\SudokuApiSource;
 use app\models\SudokuRedisStorage;
 use app\models\SudokuSourceInterface;
 use app\models\SudokuStorageInterface;
+use Yii;
 use yii\base\Application;
 use yii\base\BootstrapInterface;
 
@@ -29,29 +30,24 @@ class Bootstrap implements BootstrapInterface
         /**
          * Set interfaces
          */
-        $app->set(SudokuSourceInterface::class, SudokuApiSource::class);
-        $app->set(SudokuStorageInterface::class, SudokuRedisStorage::class);
+        Yii::$container->set(SudokuSourceInterface::class, SudokuApiSource::class);
+        Yii::$container->set(SudokuStorageInterface::class, SudokuRedisStorage::class);
+        Yii::$container->setSingleton(ApplicationServer::class, EventLoop::class);
+        Yii::$container->setSingleton(ApplicationClient::class, RatchetApplicationClient::class);
 
         /**
-         * Set components
+         * @var $clientComponent ApplicationClient
          */
-        $app->set('sudokuServer', EventLoop::class);
-        $app->set('sudokuClient', RatchetApplicationClient::class);
-
+        $clientComponent = Yii::$container->get(ApplicationClient::class);
         /**
-         * @var ApplicationClient $client
+         * @var $serverComponent ApplicationServer
          */
-        $client = $app->get('sudokuClient');
+        $serverComponent = Yii::$container->get(ApplicationServer::class);
 
-        /**
-         * @var ApplicationServer $server
-         */
-        $server = $app->get('sudokuServer');
+        $clientComponent->link($serverComponent);
+        $serverComponent->link($clientComponent);
 
-        /**
-         * links
-         */
-        $client->link($server);
-        $server->link($client);
+        $app->set('sudokuClient', $clientComponent);
+        $app->set('sudokuServer', $serverComponent);
     }
 }

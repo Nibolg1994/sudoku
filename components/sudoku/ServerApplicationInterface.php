@@ -4,7 +4,6 @@ namespace app\components\sudoku;
 
 
 use app\components\sudoku\events\Event;
-use app\components\sudoku\events\EventMoveRequest;
 
 /**
  * Interface ServerApplicationInterface
@@ -28,16 +27,21 @@ interface ServerApplicationInterface
     const EVENT_SHOW_TOP_LIST_RESPONSE = 'eventShowTopListResponse';
 
     /**
+     * Event trigger when server send error
+     */
+    const EVENT_ERROR = 'eventError';
+
+    /**
      * @param Event $event
      * @return mixed
      */
-    public function startGame(Event $event);
+    public function start(Event $event);
 
     /**
-     * @param EventMoveRequest $event
+     * @param Event $event
      * @return mixed
      */
-    public function move(EventMoveRequest $event);
+    public function move(Event $event);
 
     /**
      * @param Event $event

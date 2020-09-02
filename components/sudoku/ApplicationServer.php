@@ -3,7 +3,6 @@
 namespace app\components\sudoku;
 
 use app\components\sudoku\clients\ApplicationClient;
-use app\components\sudoku\clients\ClientApplicationInterface;
 use yii\base\Component;
 
 /**
@@ -29,7 +28,12 @@ abstract class ApplicationServer extends Component implements ServerApplicationI
         );
 
         $this->on(
-            ClientApplicationInterface::EVENT_START_GAME_REQUEST,
+            ApplicationServer::EVENT_START_GAME_ACCEPT,
+            [$client, 'sendEvent']
+        );
+
+        $this->on(
+            ApplicationServer::EVENT_ERROR,
             [$client, 'sendEvent']
         );
     }

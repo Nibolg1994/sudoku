@@ -1,18 +1,18 @@
 <?php
 
+
 namespace app\components\sudoku\events;
 
-
 /**
- * Class Event
+ * Class ErrorEvent
  * @package app\components\sudoku\events
  */
-class Event extends BaseEvent
+class ErrorEvent extends BaseEvent
 {
     /**
-     * @var array
+     * @var string
      */
-   public $data = [];
+    public $message;
 
     /**
      * @return string
@@ -21,7 +21,8 @@ class Event extends BaseEvent
     {
         return json_encode([
             'event' => $this->name,
-            'data' => $this->data
+            'error' => $this->message,
+            'data' => []
         ]);
     }
 }
