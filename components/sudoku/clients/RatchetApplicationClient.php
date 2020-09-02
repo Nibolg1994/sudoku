@@ -23,7 +23,8 @@ class RatchetApplicationClient extends ApplicationClient implements MessageCompo
     /**
      * WsApplicationClient constructor.
      */
-    public function __construct() {
+    public function __construct()
+    {
         parent::__construct();
         $this->clients = [];
     }
@@ -45,6 +46,9 @@ class RatchetApplicationClient extends ApplicationClient implements MessageCompo
      */
     function onClose(ConnectionInterface $conn)
     {
+        $event = new Event();
+        $event->clientId = $conn->resourseId;
+        $this->trigger(ApplicationClient::EVENT_DISCONNECT, $event);
         // The connection is closed, remove it, as we can no longer send it messages
         unset($this->clients[$conn->resourseId]);
     }
