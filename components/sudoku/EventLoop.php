@@ -7,7 +7,8 @@ use app\components\sudoku\events\Event;
 use app\models\SudokuGame;
 use app\models\SudokuStorageInterface;
 use app\models\User;
-use UserRepository;
+use app\repositories\UserRepository;
+
 
 /**
  * Class ServerApplicationEventLoop
@@ -63,8 +64,8 @@ class EventLoop extends ApplicationServer
             $this->restart();
         }
 
-        if (!isset($event->clientId, $event->data['name'])
-            || !$this->connect($event->clientId, $event->data['name'])
+        if (!isset($event->clientId, $event->eventData['name'])
+            || !$this->connect($event->clientId, $event->eventData['name'])
         ) {
             $responseEvent = new ErrorEvent();
             $responseEvent->clientId = $event->clientId;
@@ -77,7 +78,7 @@ class EventLoop extends ApplicationServer
         }
 
         $responseEvent = new Event();
-        $responseEvent->data['game'] = $this->game->getBoard();
+        $responseEvent->eventData['game'] = $this->game->getBoard();
         $responseEvent->clientId = $event->clientId;
 
         $this->trigger(
@@ -98,16 +99,17 @@ class EventLoop extends ApplicationServer
         }
 
         if (!isset(
-            $event->data['cellId'],
-            $event->data['value'],
+            $event->eventData['cellId'],
+            $event->eventData['value'],
             $event->clientId)
         ) {
             return;
         }
 
-        $cellId = $event->data['cellId'];
-        $value = $event->data['value'];
+        $cellId = $event->eventData['cellId'];
+        $value = $event->eventData['value'];
         $clientId = $event->clientId;
+
 
         if (
             !empty($this->moves[$cellId])
@@ -116,7 +118,7 @@ class EventLoop extends ApplicationServer
             return;
         }
 
-        if (!$this->game->move($cellId, $value)) {
+        if (!$this->game->move($value, $cellId)) {
             return;
         }
 
@@ -126,8 +128,8 @@ class EventLoop extends ApplicationServer
 
         $responseEvent = new Event();
         $responseEvent->clientId = $clientId;
-        $responseEvent->data['cellId'] = $cellId;
-        $responseEvent->data['value'] = $value;
+        $responseEvent->eventData['cellId'] = $cellId;
+        $responseEvent->eventData['value'] = $value;
         $this->trigger(
             ServerApplicationInterface::EVENT_MOVE_RESPONSE,
             $responseEvent
@@ -145,7 +147,7 @@ class EventLoop extends ApplicationServer
         $storage = $this->storage;
         $responseEvent = new Event();
         $responseEvent->clientId = $event->clientId;
-        $responseEvent->data['topList'] = $storage->getTopList();
+        $responseEvent->eventData['topList'] = $storage->getTopList();
 
         $this->trigger(
             ServerApplicationInterface::EVENT_SHOW_TOP_LIST_RESPONSE,
@@ -207,7 +209,7 @@ class EventLoop extends ApplicationServer
             'name' => $name
         ]);
 
-        if ($user->validate()) {
+        if (!$user->validate()) {
             return false;
         }
 

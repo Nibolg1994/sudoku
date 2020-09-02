@@ -2,7 +2,7 @@
 
 namespace app\components\sudoku\clients;
 
-use app\components\sudoku\events\Event;
+use app\components\sudoku\events\BaseEvent;
 
 /**
  * Interface ClientApplicationInterface
@@ -31,14 +31,14 @@ interface ClientApplicationInterface
     public const EVENT_DISCONNECT = 'eventDisconnect';
 
     /**
-     * @param Event $event
+     * @param BaseEvent $event
      * @return void
      */
-    public function sendEvent(Event $event);
+    public function sendEvent(BaseEvent $event);
 
     /**
-     * @param Event $event
+     * @param BaseEvent $event
      * @return void
      */
-    public function sendBroadcastEvent(Event $event);
+    public function sendBroadcastEvent(BaseEvent $event);
 }

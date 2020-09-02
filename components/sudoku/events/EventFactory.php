@@ -28,20 +28,19 @@ class EventFactory
      */
     public static function createEvent($msg, $clientId): ?Event
     {
-        $data = json_decode($msg);
+        $data = json_decode($msg, true);
         if (!isset($data['name'], $data['data'])) {
             return null;
         }
 
-        $action = ArrayHelper::keyExists($data['name'], static::$events);
-        if (!$action) {
+        if (!ArrayHelper::isIn($data['name'], static::$events)) {
             return null;
         }
 
         $event = new Event();
         $event->clientId = $clientId;
         $event->name = $data['name'];
-        $event->data = $data['data'];
+        $event->eventData = $data['data'];
         return $event;
     }
 }

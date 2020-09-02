@@ -12,7 +12,7 @@ class Event extends BaseEvent
     /**
      * @var array
      */
-   public $data = [];
+   public $eventData = [];
 
     /**
      * @return string
@@ -21,7 +21,7 @@ class Event extends BaseEvent
     {
         return json_encode([
             'event' => $this->name,
-            'data' => $this->data
+            'data' => $this->eventData
         ]);
     }
 }

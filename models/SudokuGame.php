@@ -126,13 +126,13 @@ class SudokuGame
         $countRows = static::getCountRows();
 
         $y = intdiv($idCell - 1, $countRows);
-        $x = ($idCell - 1) % $countRows - 1;
+        $x = ($idCell - 1) % $countRows;
 
-        if ($y >= $countRows || $y < 1) {
+        if ($y >= $countRows || $y < 0) {
             return false;
         }
 
-        if ($x >= $countRows || $x < 1) {
+        if ($x >= $countRows || $x < 0) {
             return false;
         }
 

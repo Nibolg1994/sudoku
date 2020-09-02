@@ -2,6 +2,7 @@
 
 namespace app\components\sudoku\clients;
 
+use app\components\sudoku\events\BaseEvent;
 use app\components\sudoku\events\Event;
 use app\components\sudoku\events\EventFactory;
 use Ratchet\MessageComponentInterface;
@@ -81,10 +82,10 @@ class RatchetApplicationClient extends ApplicationClient implements MessageCompo
     }
 
     /**
-     * @param Event $event
+     * @param BaseEvent $event
      * @return void
      */
-    public function sendEvent(Event $event)
+    public function sendEvent(BaseEvent $event)
     {
         if (ArrayHelper::keyExists($event->clientId, $this->clients)) {
             $client = $this->clients[$event->clientId];
@@ -93,19 +94,20 @@ class RatchetApplicationClient extends ApplicationClient implements MessageCompo
     }
 
     /**
-     * @param Event $event
+     * @param BaseEvent $event
      * @return void
      */
-    public function sendBroadcastEvent(Event $event)
+    public function sendBroadcastEvent(BaseEvent $event)
     {
         if (!ArrayHelper::keyExists($event->clientId, $this->clients)) {
             return;
         }
         $from = $this->clients[$event->clientId];
-        foreach ($this->clients as $client) {
-            if ($from !== $client) {
+        echo "ok" . PHP_EOL;
+        foreach (array_keys($this->clients) as $clientId) {
+            if ($from->resourceId !== $clientId) {
                 // The sender is not the receiver, send to each client connected
-                $client->send($event);
+                $this->clients[$clientId]->send($event);
             }
         }
     }
