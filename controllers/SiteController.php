@@ -2,6 +2,7 @@
 
 namespace app\controllers;
 
+use app\models\SudokuGame;
 use yii\web\Controller;
 
 class SiteController extends Controller
@@ -25,6 +26,8 @@ class SiteController extends Controller
      */
     public function actionIndex()
     {
-        return $this->render('index');
+        return $this->render('index', [
+            'rows' => SudokuGame::getValues()
+        ]);
     }
 }

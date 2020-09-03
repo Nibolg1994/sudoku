@@ -96,15 +96,18 @@ class SudokuGame
         }
 
         for ($i = 0; $i < static::getCountRows(); $i ++) {
-            if (array_diff($this->board[$i], static::getValues())) {
+            $countCoincidence = count(array_intersect($this->board[$i], static::getValues()));
+            if ($countCoincidence == static::getCountRows()) {
                 return false;
             }
             $column = ArrayHelper::getColumn($this->board, $i);
-            if (array_diff($column, static::getValues())) {
+            $countCoincidence = count(array_intersect($column, static::getValues()));
+            if ($countCoincidence == static::getCountRows()) {
                 return false;
             }
 
-            if (array_diff($this->getSquareItems($i), static::getValues())) {
+            $countCoincidence = count(array_intersect($this->getSquareItems($i), static::getValues()));
+            if ($countCoincidence == static::getCountRows()) {
                 return false;
             }
         }
@@ -136,10 +139,13 @@ class SudokuGame
             return false;
         }
 
-        if (empty($this->board[$x][$y])) {
+        if (empty($this->board[$y][$x])) {
             $this->countFreeCells--;
         }
-        $this->board[$x][$y] = $digit;
+
+        $this->board[$y][$x] = $digit;
+        echo "move $x $y $idCell $digit\n";
+        print_r($this->board[$y]);
 
         return true;
     }
@@ -147,7 +153,7 @@ class SudokuGame
     /**
      * @return array
      */
-    protected static function getValues(): array
+    public static function getValues(): array
     {
         if (empty(static::$values)) {
             for ($i = 1; $i <= static::getCountRows(); $i++) {
@@ -161,7 +167,7 @@ class SudokuGame
     /**
      * @return int
      */
-    protected static function getCountRows(): int
+    public static function getCountRows(): int
     {
         if (empty(static::$countRows)) {
             static::$countRows = static::N * static::N;

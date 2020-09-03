@@ -5,6 +5,7 @@ namespace app\components\sudoku\clients;
 use app\components\sudoku\events\BaseEvent;
 use app\components\sudoku\events\Event;
 use app\components\sudoku\events\EventFactory;
+use app\components\sudoku\ServerApplicationInterface;
 use Ratchet\MessageComponentInterface;
 use Ratchet\ConnectionInterface;
 use Yii;
@@ -48,10 +49,9 @@ class RatchetApplicationClient extends ApplicationClient implements MessageCompo
     function onClose(ConnectionInterface $conn)
     {
         $event = new Event();
-        $event->clientId = $conn->resourseId;
-        $this->trigger(ApplicationClient::EVENT_DISCONNECT, $event);
-        // The connection is closed, remove it, as we can no longer send it messages
-        unset($this->clients[$conn->resourseId]);
+        $event->clientId = $conn->resourceId;
+        $this->trigger(ClientApplicationInterface::EVENT_DISCONNECT, $event);
+        unset($this->clients[$conn->resourceId]);
     }
 
     /**
@@ -64,6 +64,7 @@ class RatchetApplicationClient extends ApplicationClient implements MessageCompo
     function onError(ConnectionInterface $conn, \Exception $e)
     {
         Yii::error($e->getMessage(). PHP_EOL. $e->getTraceAsString());
+        echo $e->getMessage() . $e->getTraceAsString();
         $conn->close();
     }
 
@@ -96,18 +97,15 @@ class RatchetApplicationClient extends ApplicationClient implements MessageCompo
     /**
      * @param BaseEvent $event
      * @return void
+     * @throws \Exception
      */
     public function sendBroadcastEvent(BaseEvent $event)
     {
-        if (!ArrayHelper::keyExists($event->clientId, $this->clients)) {
-            return;
-        }
-        $from = $this->clients[$event->clientId];
-        echo "ok" . PHP_EOL;
         foreach (array_keys($this->clients) as $clientId) {
-            if ($from->resourceId !== $clientId) {
+            if ($event->clientId !== $clientId) {
                 // The sender is not the receiver, send to each client connected
                 $this->clients[$clientId]->send($event);
+                echo $event;
             }
         }
     }

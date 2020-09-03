@@ -19,6 +19,7 @@ class SudokuAsset extends AssetBundle
     public $basePath = '@webroot';
     public $baseUrl = '@web';
     public $css = [
+        'css/sudoku.css',
     ];
     public $js = [
         'js/sudoku.js',

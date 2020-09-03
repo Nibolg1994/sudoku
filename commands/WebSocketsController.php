@@ -35,13 +35,17 @@ class WebSocketsController extends Controller
          * @var $ratchetComponent RatchetApplicationClient
          */
         $ratchetComponent = Yii::$app->get('sudokuClient');
+
+        $wsServer = new WsServer($ratchetComponent);
+
         $server = IoServer::factory(
-            new HttpServer(
-                new WsServer(
-                    $ratchetComponent
-                )
-            ),
+            new HttpServer($wsServer),
             ArrayHelper::getValue(Yii::$app->params, ['websocket', 'port'])
+        );
+
+        $wsServer->enableKeepAlive(
+            $server->loop,
+            ArrayHelper::getValue(Yii::$app->params, ['websocket', 'keep-alive-interval'])
         );
 
         $this->stdout('server run' . PHP_EOL, Console::FG_GREEN);

@@ -27,6 +27,11 @@ interface ServerApplicationInterface
     const EVENT_SHOW_TOP_LIST_RESPONSE = 'eventShowTopListResponse';
 
     /**
+     * Server trigger event when user disconnected from game
+     */
+    const EVENT_FREE_CELLS = 'eventFreeCells';
+
+    /**
      * Event trigger when server send error
      */
     const EVENT_ERROR = 'eventError';
@@ -48,4 +53,10 @@ interface ServerApplicationInterface
      * @return mixed
      */
     public function topList(Event $event);
+
+    /**
+     * @param Event $event
+     * @return mixed
+     */
+    public function disconnect(Event $event);
 }

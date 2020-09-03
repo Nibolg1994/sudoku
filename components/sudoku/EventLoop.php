@@ -79,6 +79,7 @@ class EventLoop extends ApplicationServer
 
         $responseEvent = new Event();
         $responseEvent->eventData['game'] = $this->game->getBoard();
+
         $responseEvent->clientId = $event->clientId;
 
         $this->trigger(
@@ -118,7 +119,7 @@ class EventLoop extends ApplicationServer
             return;
         }
 
-        if (!$this->game->move($value, $cellId)) {
+        if (!$this->game->move((int) $value, (int) $cellId)) {
             return;
         }
 
@@ -161,6 +162,21 @@ class EventLoop extends ApplicationServer
     public function disconnect(Event $event)
     {
         UserRepository::remove($event->clientId);
+        $cells = [];
+        foreach ($this->moves as $cellId => $clientId) {
+            if ($clientId == $event->clientId) {
+                $cells[] = $cellId;
+                unset($this->moves[$cellId]);
+            }
+        }
+
+        $responseEvent = new Event();
+        $responseEvent->clientId = $event->clientId;
+        $responseEvent->eventData['cells'] = $cells;
+        $this->trigger(
+            ServerApplicationInterface::EVENT_FREE_CELLS,
+            $responseEvent
+        );
     }
 
     /**
@@ -173,7 +189,7 @@ class EventLoop extends ApplicationServer
         }
 
         $this->isFinished = true;
-        $this->storage->save($this->lastUser);
+        $this->storage->save(UserRepository::get($this->lastUser));
 
         return true;
     }
