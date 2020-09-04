@@ -24,3 +24,7 @@ $index = 1;
     <?php endforeach;?>
 </table>
 </div>
+<div id="topList" style="display:none">
+    <h3>Топ лист игрков</h3>
+    <ul id="list_users"></ul>
+</div>

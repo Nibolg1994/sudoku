@@ -126,18 +126,13 @@ class SudokuGame
             return false;
         }
 
-        $countRows = static::getCountRows();
+        $index = $this->getIndexById($idCell);
 
-        $y = intdiv($idCell - 1, $countRows);
-        $x = ($idCell - 1) % $countRows;
-
-        if ($y >= $countRows || $y < 0) {
+        if (!$index) {
             return false;
         }
 
-        if ($x >= $countRows || $x < 0) {
-            return false;
-        }
+        list($y, $x) = $index;
 
         if (empty($this->board[$y][$x])) {
             $this->countFreeCells--;
@@ -148,6 +143,30 @@ class SudokuGame
         print_r($this->board[$y]);
 
         return true;
+    }
+
+
+    /**
+     * @param $cellId
+     * @return bool
+     */
+    public function freeCell($cellId)
+    {
+        $index = $this->getIndexById($cellId);
+
+        if (!$index) {
+            return false;
+        }
+
+        list($y, $x) = $index;
+
+        if (!empty($this->board[$y][$x])) {
+            $this->countFreeCells++;
+            $this->board[$y][$x] = null;
+            return true;
+        }
+
+        return false;
     }
 
     /**
@@ -173,6 +192,27 @@ class SudokuGame
             static::$countRows = static::N * static::N;
         }
         return static::$countRows;
+    }
+
+    /**
+     * @param $idCell
+     * @return array|bool
+     */
+    protected function getIndexById($idCell)
+    {
+        $countRows = static::getCountRows();
+        $y = intdiv($idCell - 1, $countRows);
+        $x = ($idCell - 1) % $countRows;
+
+        if ($y >= $countRows || $y < 0) {
+            return false;
+        }
+
+        if ($x >= $countRows || $x < 0) {
+            return false;
+        }
+
+        return [$y, $x];
     }
 
     /**

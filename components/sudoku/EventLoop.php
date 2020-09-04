@@ -167,6 +167,7 @@ class EventLoop extends ApplicationServer
             if ($clientId == $event->clientId) {
                 $cells[] = $cellId;
                 unset($this->moves[$cellId]);
+                $this->game->freeCell($cellId);
             }
         }
 

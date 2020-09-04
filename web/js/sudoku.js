@@ -4,7 +4,8 @@ const events = {
     'start': 'startGameAccept',
     'move': 'eventMoveRepose',
     'topList': 'eventShowTopListResponse',
-    'freeCells': 'eventFreeCells'
+    'freeCells': 'eventFreeCells',
+    'error': 'eventError'
 };
 
 conn.onopen = function(e) {
@@ -13,27 +14,50 @@ conn.onopen = function(e) {
 
 conn.onmessage = function(e) {
     console.log(e.data);
-    event = JSON.parse(e.data);
-    if (event.event === events.start) {
-        innitBoard(event.data.game);
-        $('#sudoku-board').show();
+    var event = JSON.parse(e.data);
+    if (!event){
+        return;
     }
-
-    if (event.event === events.move) {
-        updateGame(event.data.cellId, event.data.value);
-    }
-
-    if (event.event === events.freeCells) {
-        freeCells(event.data.cells);
+    switch (event.event) {
+        case events.start:
+            innitBoard(event.data.game);
+            break;
+        case events.move:
+            updateGame(event.data.cellId, event.data.value);
+            break;
+        case events.freeCells:
+            freeCells(event.data.cells);
+            break;
+        case events.error:
+            error(event.error);
+            break;
+        case events.topList:
+            showTopList(event.data.topList);
+            break;
+        default:
+            break;
     }
 };
 
 $('#btn-start').click(function (e) {
+    var name = prompt("Введите имя", "");
+    if (name === null || name === "") {
+        return
+    }
     var event = {
         name: "startGameRequest",
-        data: {"name": "Andrey" + Math.random()}
+        data: {"name": name}
     };
     conn.send(JSON.stringify(event));
+});
+
+$('#btn-list').click(function (e) {
+    var event = {
+        name: 'eventShowTopListRequest',
+        data:{}
+    };
+    conn.send(JSON.stringify(event));
+    console.log(JSON.stringify(event));
 });
 
 function isNormalInteger(str) {
@@ -68,6 +92,8 @@ function innitBoard(data) {
             }
         }
     }
+    $('#sudoku-board').show();
+    $('#topList').hide();
 }
 
 function updateGame(id, value) {
@@ -85,6 +111,24 @@ function freeCells(cells) {
         item.val('');
         item.prop('disabled', false);
     })
+}
+
+
+function showTopList(list) {
+    var $list = $('#list_users');
+    $list.html('');
+    list.forEach((name, score) => {
+        $list.append("<li><strong>" + name + ":</strong> " + score + "</li>")
+    });
+    $('#topList').show();
+    $('#sudoku-board').hide();
+}
+
+
+function error(error) {
+    $('#sudoku-board').hide();
+    $('#topList').hide();
+    alert(error);
 }
 
 
