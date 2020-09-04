@@ -67,7 +67,7 @@ Edit the file `config/console.php` with real data, for example:
 
 
 
-### Running  acceptance tests
+### Running
 
  
 1. Run `php yii web-sockets/sudoku-game`
