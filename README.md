@@ -14,11 +14,11 @@ INSTALLATION
 composer install
 ~~~
 
-Now you should be able to access the application through the following URL, assuming `basic` is the directory
+Now you should be able to access the application through the following URL, assuming `sudoku` is the directory
 directly under the Web root.
 
 ~~~
-http://localhost/basic/web/
+http://localhost/sudoku/web/
 ~~~
 
 
