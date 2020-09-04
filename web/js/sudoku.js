@@ -1,10 +1,13 @@
 var conn = new WebSocket('ws://localhost:8080');
+var userName = "";
+var start = false;
 
 const events = {
     'start': 'startGameAccept',
     'move': 'eventMoveRepose',
     'topList': 'eventShowTopListResponse',
     'freeCells': 'eventFreeCells',
+    'finish': 'eventFinish',
     'error': 'eventError'
 };
 
@@ -34,21 +37,34 @@ conn.onmessage = function(e) {
         case events.topList:
             showTopList(event.data.topList);
             break;
+        case events.finish:
+            finish();
+            break;
         default:
             break;
     }
 };
 
 $('#btn-start').click(function (e) {
-    var name = prompt("Введите имя", "");
-    if (name === null || name === "") {
-        return
+    if (start) {
+        $('#sudoku-board').show();
+        $('#topList').hide();
+        $(this).hide();
+        return;
+    }
+
+    if (!userName) {
+        userName = prompt("Введите имя");
+    }
+    if (!userName) {
+        return;
     }
     var event = {
         name: "startGameRequest",
-        data: {"name": name}
+        data: {"name": userName}
     };
     conn.send(JSON.stringify(event));
+    $(this).hide();
 });
 
 $('#btn-list').click(function (e) {
@@ -58,6 +74,7 @@ $('#btn-list').click(function (e) {
     };
     conn.send(JSON.stringify(event));
     console.log(JSON.stringify(event));
+    $('#btn-start').show();
 });
 
 function isNormalInteger(str) {
@@ -66,7 +83,7 @@ function isNormalInteger(str) {
 }
 
 $('.cell').change(function (e) {
-    if (isNormalInteger($(this).val())) {
+    if (isNormalInteger($(this).val()) || $(this).val() === "") {
         var event = {
             name: "eventMoveRequest",
             data: {"cellId": $(this).data('id'), "value": $(this).val()}
@@ -92,6 +109,7 @@ function innitBoard(data) {
             }
         }
     }
+    start = true;
     $('#sudoku-board').show();
     $('#topList').hide();
 }
@@ -99,8 +117,13 @@ function innitBoard(data) {
 function updateGame(id, value) {
     var item = $('#cell' + id);
     if (item.length == 1) {
-        item.val(value);
-        item.prop('disabled', true);
+        if (!value) {
+            item.val("");
+            item.prop('disabled', false);
+        } else {
+            item.val(value);
+            item.prop('disabled', true);
+        }
     }
 }
 
@@ -117,9 +140,12 @@ function freeCells(cells) {
 function showTopList(list) {
     var $list = $('#list_users');
     $list.html('');
-    list.forEach((name, score) => {
-        $list.append("<li><strong>" + name + ":</strong> " + score + "</li>")
-    });
+    for (var prop in list) {
+        if (list.hasOwnProperty(prop)) {
+            $list.append("<li><strong>" + prop + ":</strong> " + list[prop] + "</li>")
+        }
+    }
+
     $('#topList').show();
     $('#sudoku-board').hide();
 }
@@ -128,7 +154,18 @@ function showTopList(list) {
 function error(error) {
     $('#sudoku-board').hide();
     $('#topList').hide();
+    $('#btn-start').show();
+    userName = "";
     alert(error);
 }
 
+
+function finish() {
+    $('#sudoku-board').hide();
+    $('#topList').hide();
+    userName = "";
+    $('#btn-start').show();
+    start = false;
+    alert('The game over!');
+}
 

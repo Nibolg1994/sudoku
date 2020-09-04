@@ -5,7 +5,7 @@ use \app\assets\SudokuAsset;
 /* @var $this yii\web\View */
 /* @var array $rows */
 
-$this->title = 'My Yii Application';
+$this->title = 'Судоку';
 SudokuAsset::register($this);
 $index = 1;
 ?>

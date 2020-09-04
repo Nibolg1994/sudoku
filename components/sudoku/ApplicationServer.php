@@ -41,5 +41,10 @@ abstract class ApplicationServer extends Component implements ServerApplicationI
             ApplicationServer::EVENT_FREE_CELLS,
             [$client, 'sendBroadcastEvent']
         );
+
+        $this->on(
+            ApplicationServer::EVENT_FINISH,
+            [$client, 'sendBroadcastEvent']
+        );
     }
 }

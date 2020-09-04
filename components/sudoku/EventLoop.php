@@ -125,18 +125,22 @@ class EventLoop extends ApplicationServer
 
         $this->lastUser = $clientId;
         $this->moves[$cellId] = $clientId;
-        $this->finish();
-
-        $responseEvent = new Event();
-        $responseEvent->clientId = $clientId;
-        $responseEvent->eventData['cellId'] = $cellId;
-        $responseEvent->eventData['value'] = $value;
-        $this->trigger(
-            ServerApplicationInterface::EVENT_MOVE_RESPONSE,
-            $responseEvent
-        );
-
-
+        if ($this->finish()) {
+            $responseEvent = new Event();
+            $this->trigger(
+                ServerApplicationInterface::EVENT_FINISH,
+                $responseEvent
+            );
+        } else {
+            $responseEvent = new Event();
+            $responseEvent->clientId = $clientId;
+            $responseEvent->eventData['cellId'] = $cellId;
+            $responseEvent->eventData['value'] = $value;
+            $this->trigger(
+                ServerApplicationInterface::EVENT_MOVE_RESPONSE,
+                $responseEvent
+            );
+        }
     }
 
     /**
@@ -215,6 +219,9 @@ class EventLoop extends ApplicationServer
      */
     private function connect($clientId, $name)
     {
+        if (empty($name)) {
+            return false;
+        }
         if (!UserRepository::exists($clientId)
             && UserRepository::hasName($name)
         ) {

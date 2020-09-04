@@ -63,6 +63,7 @@ class SudokuRedisStorage implements SudokuStorageInterface
     {
         $redisValues = $this->call('HGETALL', [static::REDIS_KEY]);
 
+
         if (empty($redisValues)) {
             return [];
         }
@@ -72,7 +73,7 @@ class SudokuRedisStorage implements SudokuStorageInterface
             $values[$redisValues[$i]] = $redisValues[$i + 1];
         }
 
-        rsort($values);
+        arsort($values);
 
         return $values;
     }

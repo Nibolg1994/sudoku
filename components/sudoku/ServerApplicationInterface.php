@@ -37,6 +37,11 @@ interface ServerApplicationInterface
     const EVENT_ERROR = 'eventError';
 
     /**
+     * Event trigger when game over
+     */
+    const EVENT_FINISH = 'eventFinish';
+
+    /**
      * @param Event $event
      * @return mixed
      */

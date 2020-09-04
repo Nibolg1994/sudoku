@@ -97,17 +97,17 @@ class SudokuGame
 
         for ($i = 0; $i < static::getCountRows(); $i ++) {
             $countCoincidence = count(array_intersect($this->board[$i], static::getValues()));
-            if ($countCoincidence == static::getCountRows()) {
+            if ($countCoincidence != static::getCountRows()) {
                 return false;
             }
             $column = ArrayHelper::getColumn($this->board, $i);
             $countCoincidence = count(array_intersect($column, static::getValues()));
-            if ($countCoincidence == static::getCountRows()) {
+            if ($countCoincidence != static::getCountRows()) {
                 return false;
             }
 
             $countCoincidence = count(array_intersect($this->getSquareItems($i), static::getValues()));
-            if ($countCoincidence == static::getCountRows()) {
+            if ($countCoincidence != static::getCountRows()) {
                 return false;
             }
         }
@@ -122,6 +122,10 @@ class SudokuGame
      */
     public function move(int $digit, int $idCell): bool
     {
+        if (!$digit) {
+            return $this->freeCell($idCell);
+        }
+
         if (!in_array($digit, static::getValues())) {
             return false;
         }
@@ -139,8 +143,6 @@ class SudokuGame
         }
 
         $this->board[$y][$x] = $digit;
-        echo "move $x $y $idCell $digit\n";
-        print_r($this->board[$y]);
 
         return true;
     }

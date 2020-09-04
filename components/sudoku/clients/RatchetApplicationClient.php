@@ -64,7 +64,6 @@ class RatchetApplicationClient extends ApplicationClient implements MessageCompo
     function onError(ConnectionInterface $conn, \Exception $e)
     {
         Yii::error($e->getMessage(). PHP_EOL. $e->getTraceAsString());
-        echo $e->getMessage() . $e->getTraceAsString();
         $conn->close();
     }
 
@@ -105,7 +104,6 @@ class RatchetApplicationClient extends ApplicationClient implements MessageCompo
             if ($event->clientId !== $clientId) {
                 // The sender is not the receiver, send to each client connected
                 $this->clients[$clientId]->send($event);
-                echo $event;
             }
         }
     }
